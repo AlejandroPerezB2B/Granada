@@ -8,7 +8,7 @@ The project is currently under active development. Processing decisions, softwar
 
 ## Authors
 
-- **Alejandro Pérez** — _[add GitHub username]_
+- **Alejandro Pérez** — `@AlejandroPerezB2B`
 - **Celia Sissi Stijsiger** — `@CeliaSissi`
 
 ## Repository status
