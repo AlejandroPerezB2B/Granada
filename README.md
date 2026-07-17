@@ -502,7 +502,6 @@ Complete this table whenever an analysis version is frozen.
 # To be confirmed
 
 - final project and repository name;
-- Alejandro's GitHub username;
 - logic used to assign triad codes;
 - meaning of participant suffixes `_1`, `_2`, and `_3`;
 - whether each participant folder always contains exactly one recording;
