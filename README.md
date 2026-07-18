@@ -1,6 +1,6 @@
 # Triadic EEG Analysis Pipeline
 
-> **Project title:** _[Replace this line with the final experiment title]_
+> **Project title:** _ColMem_
 
 This repository contains the MATLAB and EEGLAB code used to organise, import, preprocess, synchronise, and analyse EEG data recorded simultaneously from participant triads.
 
