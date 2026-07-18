@@ -205,32 +205,35 @@ EEG = pop_fileio(datFile);
 
 ---
 
-# Initial import
+# The functions:
 
-The function:
+To be used in the same order presented here.
 
 ```text
 code/import/import_curry_triads.m
 ```
 
-performs the following operations:
+### `import_curry_triads.m`
 
-1. identifies participant folders matching `number_1`, `number_2`, or `number_3`;
-2. groups participant folders by triad code;
-3. checks that each recording contains a `.dat` file and its companion files;
-4. rejects ambiguous folders containing more than one complete CURRY dataset;
-5. detects the CURRY compressed-data identifier when possible;
-6. imports the `.dat` recording using `pop_fileio`;
-7. checks the resulting EEGLAB structure;
-8. adds triad and participant metadata to `EEG.etc`;
-9. saves each imported recording as an EEGLAB `.set` dataset;
-10. returns a triad summary and an import log.
+The `import_curry_triads` function imports raw CURRY/Neuroscan EEG recordings organised by participant triads. It:
+
+- identifies participant folders named `<triad code>_1`, `<triad code>_2`, and `<triad code>_3`;
+- groups participant recordings by triad code;
+- checks that each folder contains one complete CURRY dataset, including the `.dat` file and its companion files;
+- rejects folders containing missing or ambiguous recordings;
+- checks for unsupported compressed CURRY data when possible;
+- imports each recording into EEGLAB using `pop_fileio`;
+- validates the resulting EEGLAB dataset;
+- assigns standard channel locations after temporarily mapping `CB1` and `CB2` to `I1` and `I2`;
+- adds participant, triad, and import information to `EEG.etc`;
+- saves each imported recording as an EEGLAB `.set` dataset;
+- returns a triad-level summary and an import log describing the outcome of each recording.
 
 ## Example
 
 ```matlab
 rawDataDir = 'D:\TriadicEEG\data_raw';
-outputDir  = 'D:\TriadicEEG\data_derivatives\01_imported';
+outputDir  = 'D:\TriadicEEG\data_derivatives';
 
 [triads, importLog] = import_curry_triads( ...
     rawDataDir, ...
@@ -247,4 +250,67 @@ disp(importLog);
 ```
 ---
 
+```text
+code/import/synchronise_triad_markers.m
+```
 
+### `synchronise_triad_markers`
+
+The `synchronise_triad_markers` function synchronises the event markers and duration of three continuous EEGLAB recordings belonging to the same participant triad. It:
+
+- loads the three `.set` datasets and checks that they have the same sampling rate;
+- extracts the experimental markers while excluding specified event types such as `boundary`;
+- aligns the three marker sequences and identifies markers missing from individual recordings;
+- reconstructs a complete marker sequence shared by all three recordings;
+- calculates a common marker timeline using the median relative latency across the recordings in which each marker was originally present;
+- trims each recording so that it begins exactly 2 seconds before the first common marker;
+- assigns identical marker types and sample latencies to all three datasets;
+- trims each recording 10 seconds after the final common marker;
+- rebuilds `EEG.event`, `EEG.urevent`, and their corresponding links;
+- verifies that the final marker sequences and latencies are identical;
+- saves the synchronised datasets with `_sync` appended to their original filenames;
+- returns the three synchronised datasets, a marker synchronisation table, and a summary of the procedure.
+
+  #### Example
+
+```matlab
+% Define the paths to the three recordings belonging to one triad.
+setFile1 = 'D:\TriadicEEG\303_1_raw.set';
+setFile2 = 'D:\TriadicEEG\303_2_raw.set';
+setFile3 = 'D:\TriadicEEG\303_3_raw.set';
+
+% Define where the synchronised datasets will be saved.
+outputDir = 'D:\TriadicEEG\synchronised';
+
+% Synchronise the marker sequences and latencies.
+[EEGsync, syncTable, summary] = ...
+    synchronise_triad_markers( ...
+        setFile1, ...
+        setFile2, ...
+        setFile3, ...
+        'IgnoreTypes', {'boundary'}, ...
+        'OutputDir', outputDir);
+```
+
+The function saves the following datasets:
+
+```text
+303_1_raw_sync.set
+303_2_raw_sync.set
+303_3_raw_sync.set
+```
+
+The synchronisation results can be inspected using:
+
+```matlab
+disp(syncTable);
+disp(summary);
+```
+
+The three synchronised datasets are also returned in:
+
+```matlab
+EEGsync{1}
+EEGsync{2}
+EEGsync{3}
+```
