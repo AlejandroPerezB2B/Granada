@@ -209,11 +209,11 @@ EEG = pop_fileio(datFile);
 
 To be used in the same order presented here.
 
+### `import_curry_triads.m`
+
 ```text
 code/import/import_curry_triads.m
 ```
-
-### `import_curry_triads.m`
 
 The `import_curry_triads` function imports raw CURRY/Neuroscan EEG recordings organised by participant triads. It:
 
@@ -250,11 +250,11 @@ disp(importLog);
 ```
 ---
 
+### `synchronise_triad_markers`
+
 ```text
 code/import/synchronise_triad_markers.m
 ```
-
-### `synchronise_triad_markers`
 
 The `synchronise_triad_markers` function synchronises the event markers and duration of three continuous EEGLAB recordings belonging to the same participant triad. It:
 
