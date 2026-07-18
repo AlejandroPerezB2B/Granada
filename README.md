@@ -2,7 +2,7 @@
 
 > **Project title:** _ColMem_
 
-This repository contains the MATLAB and EEGLAB code used to organise, import, preprocess, synchronise, and analyse EEG data recorded simultaneously from participant triads.
+This repository contains the MATLAB and EEGLAB code used to import, organise, synchronise, preprocess and analyse EEG data recorded simultaneously from participant triads.
 
 The project is currently under active development. Processing decisions, software versions, and changes to the data structure should be documented in this README as the pipeline develops.
 
@@ -10,18 +10,6 @@ The project is currently under active development. Processing decisions, softwar
 
 - **Alejandro Pérez** — `@AlejandroPerezB2B`
 - **Celia Sissi Stijsiger** — `@CeliaSissi`
-
-## Repository status
-
-The current development stage focuses on:
-
-1. documenting the experimental design and raw-data structure;
-2. importing the three EEG recordings belonging to each triad;
-3. checking the event markers recorded in the three systems;
-4. identifying markers that can be used to align the recordings;
-5. developing the subsequent preprocessing and analysis pipeline.
-
----
 
 # Experiment rationale
 
