@@ -101,17 +101,16 @@ Complete the following table using the acquisition settings.
 
 | Parameter | Value |
 |---|---|
-| EEG system | Neuroscan / CURRY _[confirm version]_ |
+| EEG system | Neuroscan SynAmps RT 64-channel Amplifier / CURRY _[confirm version]_ | Quik-Cap with Ag/Ag/Cl – sintered electrodes
 | Number of EEG systems | 3 |
-| Number of channels | _[add]_ |
-| Sampling rate | _[add]_ Hz |
-| Online reference | _[add]_ |
-| Ground electrode | _[add]_ |
-| Electrode montage | _[add]_ |
-| Additional channels | _[EOG, ECG, trigger, auxiliary channels, etc.]_ |
+| Number of channels | 64 with  |
+| Sampling rate | 1000 Hz |
+| Online reference | Between Cz and CPz |
+| Ground electrode | AFz |
+| Electrode montage | 10/20 standard International layout |
+| Additional channels | 2 integrated bipolar leads for vertical and horizontal EOG (VEO, HEO) and Trigger |
 | Online filters | _[add]_ |
 | Impedance criterion | _[add]_ |
-| Recording software version | _[add]_ |
 
 ## Event markers and synchronisation
 
