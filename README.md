@@ -103,7 +103,7 @@ Complete the following table using the acquisition settings.
 |---|---|
 | EEG system | Neuroscan SynAmps RT 64-channel Amplifier / CURRY _[confirm version]_ | Quik-Cap with Ag/Ag/Cl – sintered electrodes
 | Number of EEG systems | 3 |
-| Number of channels | 64 with  |
+| Number of channels | 64 |
 | Sampling rate | 1000 Hz |
 | Online reference | Between Cz and CPz |
 | Ground electrode | AFz |
