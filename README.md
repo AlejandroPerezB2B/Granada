@@ -229,7 +229,7 @@ The `import_curry_triads` function imports raw CURRY/Neuroscan EEG recordings or
 - saves each imported recording as an EEGLAB `.set` dataset;
 - returns a triad-level summary and an import log describing the outcome of each recording.
 
-## Example
+#### Example
 
 ```matlab
 rawDataDir = 'D:\TriadicEEG\data_raw';
