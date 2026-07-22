@@ -167,15 +167,9 @@ repository/
 
 # Software requirements
 
-## MATLAB
-
-The exact MATLAB version used for the project should be recorded here once agreed by both authors.
-
 ```text
-MATLAB version: [to be added]
+MATLAB [R2025a Alejandro]
 ```
-
-## EEGLAB
 
 ```text
 EEGLAB version: v2026.0.0
