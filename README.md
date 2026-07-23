@@ -104,7 +104,7 @@ recording_name.ceo
 
 | Parameter | Value |
 |---|---|
-| EEG system | Neuroscan SynAmps RT 64-channel Amplifier / CURRY _[confirm version]_ | Quik-Cap with Ag/Ag/Cl – sintered electrodes
+| EEG system | Neuroscan SynAmps2 64-channel Amplifier / CURRY _[confirm version]_ | Quik-Cap with Ag/Ag/Cl – sintered electrodes
 | Number of EEG systems | 3 |
 | Number of channels | 64 |
 | Sampling rate | 1000 Hz |
@@ -112,8 +112,8 @@ recording_name.ceo
 | Ground electrode | AFz |
 | Electrode montage | 10/20 standard International layout |
 | Additional channels | 2 integrated bipolar leads for vertical and horizontal EOG (VEO, HEO) and Trigger |
-| Online filters | _[add]_ |
-| Impedance criterion | _[add]_ |
+| Online filters | high-pass filter at 0.5 Hz and a low-pass filter at 70 Hz |
+| Impedance criterion | below 10 kΩ at the beginning of the recording |
 
 ## Event markers and synchronisation
 
