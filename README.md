@@ -90,15 +90,15 @@ recording_name.ceo
 
 | Condition | Description | Expected marker(s) | Notes |
 |---|---|---|---|
-| _Study phase_ | _Specific word onset_ | _1-99_ | _[both nominal and collaborative conditions have the same study phase]_ |
-| _[Collaborative Recall]_ | _[Participant 1]_ | _[101]_ | _[Notes]_ |
-| _[Collaborative Recall]_ | _[Participant 2]_ | _[102]_ | _[Notes]_ |
-| _[Collaborative Recall]_ | _[Participant 3]_ | _[103]_ | _[Notes]_ |
-| _[Collaborative Recall]_ | _[Correct Recall]_ | _[121]_ | _[Notes]_ |
-| _[Collaborative Recall]_ | _[Omission]_ | _[120]_ | _[Notes]_ |
-| _[Nominal Recall]_ | _[Participant code]_ | _[101]_ | _[Notes]_ |
-| _[Nominal Recall]_ | _[Correct Recall]_ | _[121]_ | _[Notes]_ |
-| _[Nominal Recall]_ | _[Description]_ | _[120]_ | _[Notes]_ |
+| _Study phase_ | _Specific word onset_ | _1-99_ | _both nominal and collaborative conditions have the same study phase_ |
+| _Collaborative Recall_ | _Participant 1_ | _101_ | _[Notes]_ |
+| _Collaborative Recall_ | _Participant 2_ | _102_ | _[Notes]_ |
+| _Collaborative Recall_ | _Participant 3_ | _103_ | _[Notes]_ |
+| _Collaborative Recall_ | _Correct Recall_ | _121] | _[Notes]_ |
+| _Collaborative Recall_ | _Omission_ | _120_ | _[Notes]_ |
+| _Nominal Recall_ | _Participant code_ | _101_ | _[Notes]_ |
+| _Nominal Recall_ | _Correct Recall_ | _121_ | _[Notes]_ |
+| _Nominal Recall_ | _Description_ | _120_ | _[Notes]_ |
 
 ## EEG acquisition
 
