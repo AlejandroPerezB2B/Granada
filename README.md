@@ -27,8 +27,8 @@ The experimental session consists of one session of approximately 130 minutes. T
 |---|---|---|---|
 | _Condition 1 (nominal, same language)_ | _Individual L2_ | _Individual L2_ | _Individual L2_ |
 | _Condition 2 (nominal, different language)_ | _Individual L2_ | _Individual L1_ | _Individual L2_ |
-| _Condition 2 (collaborative, same language)_ | _Collaborative L2_ | _Collaborative L2_ | _Collaborative L2_ |
-| _Condition 2 (collaborative, different language)_ | _Collaborative L2_ | _Collaborative L1_ | _Collaborative L2_ |
+| _Condition 3 (collaborative, same language)_ | _Collaborative L2_ | _Collaborative L2_ | _Collaborative L2_ |
+| _Condition 4 (collaborative, different language)_ | _Collaborative L2_ | _Collaborative L1_ | _Collaborative L2_ |
 
 **Study Phase:**
 The experiment begins with the study phase, which is completed individually by all participants. Participants studied items individually in 2 cycles in their L2 (English). Each cycle consists of 90 words in total, divided into 6 blocks of 15 words (1-sec for fixation point, 6-sec for word presentation). Each block includes one word from each category, with a randomized order of word presentation with respect to category membership. The study list also includes 9 filler words in total (2 fillers words at the beginning and end of the list and 1 filler word presented between each block). For each word, participants are asked to rate its pleasantness on a 5-point scale ranging from 1 (very unpleasant) to 5 (very pleasant) by pressing the corresponding key on the keyboard. Participants will be instructed to continue with the task even if they miss a response and informed that there are no correct or incorrect answers. Furthermore, instructions did not mention the following memory tests or the possibility of working alone versus working in groups later. EEG activity will be recorded continuously throughout this phase.
