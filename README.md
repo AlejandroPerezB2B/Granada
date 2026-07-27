@@ -94,7 +94,7 @@ recording_name.ceo
 | _Collaborative Recall_ | _Participant 1_ | _101_ | _[Notes]_ |
 | _Collaborative Recall_ | _Participant 2_ | _102_ | _[Notes]_ |
 | _Collaborative Recall_ | _Participant 3_ | _103_ | _[Notes]_ |
-| _Collaborative Recall_ | _Correct Recall_ | _121] | _[Notes]_ |
+| _Collaborative Recall_ | _Correct Recall_ | _121_ | _[Notes]_ |
 | _Collaborative Recall_ | _Omission_ | _120_ | _[Notes]_ |
 | _Nominal Recall_ | _Participant code_ | _101_ | _[Notes]_ |
 | _Nominal Recall_ | _Correct Recall_ | _121_ | _[Notes]_ |
