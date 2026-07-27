@@ -90,7 +90,7 @@ recording_name.ceo
 
 | Condition | Description | Expected marker(s) | Notes |
 |---|---|---|---|
-| _[Study phase]_ | _[Specific word onset]_ | _[1-99]_ | _[both nominal and collaborative conditions have the same study phase]_ |
+| _Study phase_ | _Specific word onset_ | _1-99_ | _[both nominal and collaborative conditions have the same study phase]_ |
 | _[Collaborative Recall]_ | _[Participant 1]_ | _[101]_ | _[Notes]_ |
 | _[Collaborative Recall]_ | _[Participant 2]_ | _[102]_ | _[Notes]_ |
 | _[Collaborative Recall]_ | _[Participant 3]_ | _[103]_ | _[Notes]_ |
