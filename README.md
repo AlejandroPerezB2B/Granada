@@ -90,12 +90,14 @@ recording_name.ceo
 
 | Condition | Description | Expected marker(s) | Notes |
 |---|---|---|---|
-| _Study phase_ | _Specific word onset_ | _1-99_ | _both nominal and collaborative conditions have the same study phase_ |
+| _Recall Phase_ | _Number of the turn_ | _1-99_ | _the same for nominal and collaborative, both have 99 turns in total_ |
+| _Collaborative Recall_ | _Collaborative condition_ | _210_ | _code to indicate the collaborative condition_ |
 | _Collaborative Recall_ | _Participant 1_ | _101_ | _[Notes]_ |
 | _Collaborative Recall_ | _Participant 2_ | _102_ | _[Notes]_ |
 | _Collaborative Recall_ | _Participant 3_ | _103_ | _[Notes]_ |
 | _Collaborative Recall_ | _Correct Recall_ | _121_ | _[Notes]_ |
 | _Collaborative Recall_ | _Omission_ | _120_ | _[Notes]_ |
+| _Nominal Recall_ | _Nominal condition_ | _100_ | _code to indicate the nominal condition_ |
 | _Nominal Recall_ | _Participant code_ | _101_ | _[Notes]_ |
 | _Nominal Recall_ | _Correct Recall_ | _121_ | _[Notes]_ |
 | _Nominal Recall_ | _Description_ | _120_ | _[Notes]_ |
