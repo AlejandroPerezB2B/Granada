@@ -309,7 +309,7 @@ outputDir = 'D:\TriadicEEG\synchronised';
         setFile1, ...
         setFile2, ...
         setFile3, ...
-        'IgnoreTypes', {'boundary'}, ...
+        'IgnoreTypes', {'boundary', '100008', '249'}, ...
         'OutputDir', outputDir);
 ```
 
@@ -334,4 +334,101 @@ The three synchronised datasets are also returned in:
 EEGsync{1}
 EEGsync{2}
 EEGsync{3}
+```
+
+### `run_all_triad_synchronisation`
+
+The `run_all_triad_synchronisation` function (it is a wrapper) applies `synchronise_triad_markers` to every participant triad contained in a root directory. It:
+
+- identifies folders named `triad_<code>`, such as `triad_303`;
+- locates the three corresponding datasets:
+  - `<code>_1_raw.set`;
+  - `<code>_2_raw.set`;
+  - `<code>_3_raw.set`;
+- checks that all three recordings are available before processing the triad;
+- excludes non-experimental events such as `boundary`, `100008`, and `249` from marker synchronisation;
+- runs `synchronise_triad_markers` separately for every complete triad;
+- saves the synchronised recordings inside corresponding output folders;
+- continues processing the remaining triads when an error occurs, when requested;
+- produces a triad-level summary containing file information, marker counts, inserted markers, sampling rate, duration, and processing status;
+- combines the marker-level synchronisation tables from all successfully processed triads;
+- saves the complete report as both an Excel file and a MATLAB `.mat` file.
+
+#### Expected input structure
+
+```text
+L2L1_data_derivatives/
+├── triad_303/
+│   ├── 303_1_raw.set
+│   ├── 303_2_raw.set
+│   └── 303_3_raw.set
+├── triad_306/
+│   ├── 306_1_raw.set
+│   ├── 306_2_raw.set
+│   └── 306_3_raw.set
+└── ...
+```
+
+#### Output structure
+
+```text
+L2L1_data_derivatives_synchronised/
+├── triad_303/
+│   ├── 303_1_raw_sync.set
+│   ├── 303_2_raw_sync.set
+│   └── 303_3_raw_sync.set
+├── triad_306/
+│   ├── 306_1_raw_sync.set
+│   ├── 306_2_raw_sync.set
+│   └── 306_3_raw_sync.set
+├── triad_synchronisation_report.xlsx
+└── triad_synchronisation_report.mat
+```
+
+The Excel report contains two worksheets:
+
+- **Triad summary:** one row per triad, including processing status, marker counts, inserted markers, sampling rate, output duration, and any error messages;
+- **Marker details:** one row per marker and triad, including its presence in each original recording and its final synchronised latency.
+
+#### Example
+
+```matlab
+% Folder containing triad_303, triad_306, triad_319, etc.
+inputRootDir = ...
+    'E:\Granada\data_derivatives\01_imported';
+
+% Folder where the synchronised datasets and reports will be saved.
+outputRootDir = ...
+    'E:\Granada\data_derivatives\02_synchronised';
+
+% Run marker synchronisation for every available triad.
+[batchSummary, allSyncTable] = ...
+    run_all_triad_synchronisation( ...
+        inputRootDir, ...
+        outputRootDir, ...
+        'IgnoreTypes', ...
+        {'boundary', '100008', '249'}, ...
+        'ContinueOnError', ...
+        true);
+```
+
+Triads that produced an error can be inspected using:
+
+```matlab
+batchSummary(batchSummary.Status == "Error", :)
+```
+
+Triads in which one or more markers were reconstructed can be inspected using:
+
+```matlab
+batchSummary( ...
+    batchSummary.InsertedMarkers1 > 0 | ...
+    batchSummary.InsertedMarkers2 > 0 | ...
+    batchSummary.InsertedMarkers3 > 0, :)
+```
+
+Marker-level information for a specific triad can be inspected using:
+
+```matlab
+allSyncTable(allSyncTable.TriadCode == "303", :)
 ```
