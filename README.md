@@ -195,11 +195,11 @@ repository/
 # Software requirements
 
 ```text
-MATLAB [R2025a Alejandro]
+MATLAB R2025a or newer
 ```
 
 ```text
-EEGLAB version: v2026.0.0
+EEGLAB v2026.0.0
 ```
 
 Add only the EEGLAB root directory, then start EEGLAB normally so it can manage its own paths and plug-ins.
@@ -280,7 +280,7 @@ code/import/synchronise_triad_markers.m
 The `synchronise_triad_markers` function synchronises the event markers and duration of three continuous EEGLAB recordings belonging to the same participant triad. It:
 
 - loads the three `.set` datasets and checks that they have the same sampling rate;
-- extracts the experimental markers while excluding specified event types such as `boundary`;
+- extracts the experimental markers while excluding specified event types such as `boundary`, `100008`, `249` (the last two we don't know what they are);
 - aligns the three marker sequences and identifies markers missing from individual recordings;
 - reconstructs a complete marker sequence shared by all three recordings;
 - calculates a common marker timeline using the median relative latency across the recordings in which each marker was originally present;
