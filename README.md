@@ -217,10 +217,6 @@ To be used in the same order presented here.
 
 ### `import_curry_triads.m`
 
-```text
-code/import/import_curry_triads.m
-```
-
 The `import_curry_triads` function imports raw CURRY/Neuroscan EEG recordings organised by participant triads. It:
 
 - identifies participant folders named `<triad code>_1`, `<triad code>_2`, and `<triad code>_3`;
@@ -257,10 +253,6 @@ disp(importLog);
 ---
 
 ### `synchronise_triad_markers`
-
-```text
-code/import/synchronise_triad_markers.m
-```
 
 The `synchronise_triad_markers` function synchronises the event markers and duration of three continuous EEGLAB recordings belonging to the same participant triad. It:
 
@@ -418,11 +410,9 @@ Marker-level information for a specific triad can be inspected using:
 allSyncTable(allSyncTable.TriadCode == "303", :)
 ```
 
-## ASR cleaning of synchronised triads
-
 ### `clean_triad_asr`
 
-The `clean_triad_asr` function performs conservative artefact cleaning on the three synchronised EEG recordings belonging to one triad.
+The function performs conservative artefact cleaning on the three synchronised EEG recordings belonging to one triad.
 
 The function is intentionally restricted to preprocessing up to the removal of unusable temporal periods. It does **not** interpolate rejected channels, rereference the data, run ICA, or apply ICLabel. These operations will be implemented separately so that ASR cleaning and ICA preparation remain modular and can be independently inspected or repeated.
 
@@ -450,49 +440,13 @@ For each triad, the function:
 
 ### Preprocessing decisions
 
-#### High-pass filtering
-
-The EEG and EOG channels are high-pass filtered once at 1 Hz before bad-channel detection and ASR.
-
-A separate low-frequency analysis copy is not created because the planned analyses do not include event-related potentials and activity below 1 Hz is not required.
-
-The Trigger channel is not filtered.
-
-#### Line-noise processing
-
-No line-noise correction is performed.
-
-The function does not apply:
-
-- CleanLine;
-- Zapline-plus;
-- notch filtering;
-- line-noise-based channel rejection.
-
-This decision was made after inspection of the recordings indicated that line noise was not a relevant problem.
-
-#### Auxiliary channels
-
-The datasets contain the following non-scalp channels:
-
-- `HEO`;
-- `VEO`;
-- `Trigger`.
-
-These channels are preserved in the datasets but excluded from:
-
-- bad-EEG-channel detection;
-- ASR calibration;
-- ASR reconstruction;
-- residual-window rejection.
+No line-noise correction is performed. This decision was made after inspection of the recordings indicated that line noise was not a relevant problem.
 
 The Trigger channel remains unchanged apart from the later removal of temporal periods shared across the triad.
 
 `M1` and `M2` contain normal EEG-like activity and are treated as EEG channels during the cleaning procedure.
 
-### Protection of frontal channels
-
-Frontal and frontopolar electrodes frequently contain strong ocular activity. Such activity can reduce their correlation with neighbouring electrodes and cause otherwise functioning channels to be rejected by automatic channel-correlation procedures.
+Protection of frontal channels: Frontal and frontopolar electrodes frequently contain strong ocular activity. Such activity can reduce their correlation with neighbouring electrodes and cause otherwise functioning channels to be rejected by automatic channel-correlation procedures.
 
 The function therefore defines a set of protected frontal channels:
 
@@ -511,12 +465,8 @@ The function therefore defines a set of protected frontal channels:
 }
 ```
 
-Protected frontal channels are not removed solely because they fail the channel-correlation criterion.
-
-They may still be removed when they show strong evidence of electrode failure, such as a sustained flat line.
-
+Protected frontal channels are not removed solely because they fail the channel-correlation criterion. They may still be removed when they show strong evidence of electrode failure, such as a sustained flat line.
 The `HEO` and `VEO` channels are used diagnostically to determine whether unusual frontal activity is consistent with ocular contamination. The original EEG data are not modified through EOG regression at this stage.
-
 This approach preserves ocular activity that can later be separated using ICA while reducing the risk of systematically removing electrodes close to the eyes.
 
 ### Bad-channel detection
@@ -535,19 +485,11 @@ Flat-lined channels are identified using:
 FlatlineCriterion = 5;
 ```
 
-This corresponds to a continuous flat period of at least 5 seconds.
-
-Line-noise-based channel detection is disabled.
-
-Each participant may retain a different number of EEG channels. Temporal correspondence across participants does not require identical channel sets.
-
 The function stores the complete original channel-location structure before removing any channel:
 
 ```matlab
 EEG.etc.triad_asr_cleaning.originalChanlocs
 ```
-
-This information will later be used to interpolate rejected scalp channels before ICA.
 
 ### Artefact Subspace Reconstruction
 
@@ -558,10 +500,6 @@ BurstCriterion = 20;
 ```
 
 ASR is configured to reconstruct contaminated subspaces rather than automatically reject every affected temporal period.
-
-The internal high-pass stage of `clean_rawdata` is disabled because the datasets have already been explicitly filtered at 1 Hz.
-
-No line-noise processing is performed within ASR.
 
 The principal settings are equivalent to:
 
@@ -622,19 +560,6 @@ EEGclean{2}.pnts == EEGclean{3}.pnts
 ```
 
 and preserves exact temporal correspondence across participants.
-
-### Acquisition reference
-
-The acquisition is assumed to have used the dedicated Quik-Cap reference located between Cz and CPz.
-
-The reference signal was not stored as one of the 67 imported channels and is not restored as a zero-valued channel.
-
-This assumption is stored as dataset metadata but does not otherwise affect this function because rereferencing is not performed at this stage.
-
-```text
-Dedicated Quik-Cap reference between Cz and CPz;
-not stored and not restored
-```
 
 ### Function syntax
 
@@ -844,18 +769,452 @@ Only samples that remain severely contaminated after ASR contribute to a partici
 
 This distinction should be retained when reporting the preprocessing procedure.
 
-### Subsequent preprocessing
+### `run_all_triad_asr`
 
-The output of `clean_triad_asr` is intended to be passed to a separate ICA-preparation procedure.
+The `run_all_triad_asr` function (a wrapper) applies `clean_triad_asr` to every triad contained in a root directory.
 
-The subsequent pipeline will include:
+The wrapper runs the conservative ASR-cleaning procedure independently for each triad, creates one output folder per triad, and combines the quality-control information from all successfully processed datasets.
 
-1. interpolation of participant-specific rejected scalp channels;
-2. arithmetic average rereferencing;
-3. exclusion of EOG and Trigger channels from the reference calculation;
-4. estimation of the effective data rank;
-5. ICA decomposition using explicit dimensionality reduction where required;
-6. ICLabel classification;
-7. manual inspection and rejection of artifactual independent components.
+For each `triad_xxx` folder, the wrapper:
 
-Interpolation and rereferencing are deliberately not implemented in `clean_triad_asr`.
+1. extracts the numeric triad identifier from the folder name;
+2. locates the three synchronised `.set` datasets;
+3. confirms that all three participant files are available;
+4. creates a corresponding output folder;
+5. calls `clean_triad_asr`;
+6. saves the cleaned datasets and triad-specific quality-control files;
+7. collects participant-, channel-, interval-, and triad-level results;
+8. records any processing error;
+9. optionally continues with the remaining triads after an error;
+10. saves a combined project-level Excel workbook and MATLAB report.
+
+#### Expected input structure
+
+```text
+02_synchronised/
+├── triad_303/
+│   ├── 303_1_raw_sync.set
+│   ├── 303_2_raw_sync.set
+│   └── 303_3_raw_sync.set
+├── triad_306/
+│   ├── 306_1_raw_sync.set
+│   ├── 306_2_raw_sync.set
+│   └── 306_3_raw_sync.set
+├── triad_319/
+│   ├── 319_1_raw_sync.set
+│   ├── 319_2_raw_sync.set
+│   └── 319_3_raw_sync.set
+└── ...
+```
+
+### Output structure
+
+```text
+03_asr_cleaned/
+├── triad_303/
+│   ├── 303_1_raw_sync_asr.set
+│   ├── 303_2_raw_sync_asr.set
+│   ├── 303_3_raw_sync_asr.set
+│   ├── 303_asr_qc.xlsx
+│   └── 303_asr_qc.mat
+├── triad_306/
+│   ├── 306_1_raw_sync_asr.set
+│   ├── 306_2_raw_sync_asr.set
+│   ├── 306_3_raw_sync_asr.set
+│   ├── 306_asr_qc.xlsx
+│   └── 306_asr_qc.mat
+├── triad_319/
+│   └── ...
+├── all_triads_asr_qc.xlsx
+└── all_triads_asr_qc.mat
+```
+
+Each triad folder contains the three ASR-cleaned datasets and the quality-control reports generated by `clean_triad_asr`.
+
+The root output folder additionally contains combined reports summarising all triads.
+
+### Function syntax
+
+```matlab
+[batchTable, ...
+ allParticipantTable, ...
+ allIntervalTable, ...
+ allChannelTable, ...
+ allTriadSummary] = ...
+    run_all_triad_asr( ...
+        inputRootDir, ...
+        outputRootDir);
+```
+
+### Basic example
+
+```matlab
+% Root folder containing the triad_xxx synchronised-data folders.
+inputRootDir = ...
+    'E:\Granada\data_derivatives\02_synchronised';
+
+% Root folder in which the ASR-cleaned datasets will be saved.
+outputRootDir = ...
+    'E:\Granada\data_derivatives\03_asr_cleaned';
+
+% Run conservative ASR cleaning for every triad.
+[batchTable, ...
+ allParticipantTable, ...
+ allIntervalTable, ...
+ allChannelTable, ...
+ allTriadSummary] = ...
+    run_all_triad_asr( ...
+        inputRootDir, ...
+        outputRootDir, ...
+        'ContinueOnError', true);
+```
+
+### Input filename convention
+
+By default, the function expects the following filename pattern:
+
+```matlab
+'%s_%d_raw_sync.set'
+```
+
+The first field corresponds to the triad code and the second field corresponds to the participant number.
+
+For triad `303`, the expected filenames are therefore:
+
+```text
+303_1_raw_sync.set
+303_2_raw_sync.set
+303_3_raw_sync.set
+```
+
+The filename convention can be changed using the `InputPattern` option:
+
+```matlab
+[batchTable, ...
+ allParticipantTable, ...
+ allIntervalTable, ...
+ allChannelTable, ...
+ allTriadSummary] = ...
+    run_all_triad_asr( ...
+        inputRootDir, ...
+        outputRootDir, ...
+        'InputPattern', '%s_%d_sync.set');
+```
+
+The pattern must contain:
+
+- one string field for the triad code;
+- one integer field for the participant number.
+
+### Continuing after processing errors
+
+By default, the wrapper continues to the next triad when one triad produces an error:
+
+```matlab
+'ContinueOnError', true
+```
+
+This is useful for batch processing because an incomplete or problematic triad does not prevent the remaining datasets from being cleaned.
+
+To stop immediately when an error occurs:
+
+```matlab
+[batchTable, ...
+ allParticipantTable, ...
+ allIntervalTable, ...
+ allChannelTable, ...
+ allTriadSummary] = ...
+    run_all_triad_asr( ...
+        inputRootDir, ...
+        outputRootDir, ...
+        'ContinueOnError', false);
+```
+
+All errors are recorded in `batchTable`.
+
+### Passing options to `clean_triad_asr`
+
+Additional options can be passed directly to `clean_triad_asr` using the `CleanerOptions` parameter.
+
+The options must be provided as a cell array containing name-value pairs:
+
+```matlab
+cleanOptions = { ...
+    'HighpassHz', 1, ...
+    'FlatlineCriterion', 5, ...
+    'ChannelCriterion', 0.75, ...
+    'ASRBurstCriterion', 20, ...
+    'WindowCriterion', 0.30};
+
+[batchTable, ...
+ allParticipantTable, ...
+ allIntervalTable, ...
+ allChannelTable, ...
+ allTriadSummary] = ...
+    run_all_triad_asr( ...
+        inputRootDir, ...
+        outputRootDir, ...
+        'ContinueOnError', true, ...
+        'CleanerOptions', cleanOptions);
+```
+
+The following options should not be included inside `CleanerOptions`:
+
+```text
+OutputDir
+SaveOutput
+```
+
+These settings are controlled internally by the batch wrapper.
+
+#### Combined Excel report
+
+The default combined Excel report is:
+
+```text
+all_triads_asr_qc.xlsx
+```
+
+It contains five worksheets.
+
+#### `Batch status`
+
+This worksheet contains one row per triad explored and includes:
+
+- triad code;
+- input folder;
+- output folder;
+- paths to the three input files;
+- processing status;
+- processing time;
+- number of participant-level rows;
+- number of channel-level rows;
+- number of removed intervals;
+- number and percentage of shared samples removed;
+- final number of samples;
+- final recording duration;
+- error messages.
+
+#### `Participants`
+
+This worksheet combines the participant-level quality-control tables generated by `clean_triad_asr`.
+
+It contains information such as:
+
+- original and final sample counts;
+- original and final recording durations;
+- original and retained EEG-channel counts;
+- rejected-channel counts;
+- percentage of channels rejected;
+- samples modified by ASR;
+- participant-specific bad-period samples;
+- shared samples removed from the triad;
+- percentage of data retained.
+
+#### `Channels`
+
+This worksheet combines all channel-level decisions across participants and triads.
+
+It records information such as:
+
+- triad identifier;
+- participant identifier;
+- channel label;
+- frontal-channel protection status;
+- flatline detection;
+- correlation-based channel detection;
+- EOG-related diagnostic measures;
+- whether the channel was retained or rejected;
+- final channel decision.
+
+#### `Removed intervals`
+
+This worksheet combines all shared temporal intervals removed across the project.
+
+For each interval, it records:
+
+- triad identifier;
+- original starting sample;
+- original ending sample;
+- starting time;
+- ending time;
+- duration;
+- whether participant 1 flagged the interval;
+- whether participant 2 flagged the interval;
+- whether participant 3 flagged the interval.
+
+#### `Triad summaries`
+
+This worksheet combines the overall quality-control summary for every successfully processed triad.
+
+It includes:
+
+- original sample count;
+- shared removed sample count;
+- percentage of data removed;
+- final sample count;
+- final recording duration;
+- participant-specific bad-period counts;
+- overlap between participant masks;
+- confirmation of identical final temporal dimensions.
+
+### Combined MATLAB report
+
+The function also saves:
+
+```text
+all_triads_asr_qc.mat
+```
+
+This file contains:
+
+```matlab
+batchTable
+allParticipantTable
+allIntervalTable
+allChannelTable
+allTriadSummary
+options
+```
+
+The MATLAB report can be used for subsequent statistical summaries, visualisation, or automated quality-control checks.
+
+### Inspecting failed triads
+
+Triads that generated an error can be inspected using:
+
+```matlab
+failedTriads = ...
+    batchTable(batchTable.Status == "Error", :);
+
+disp(failedTriads);
+```
+
+The complete MATLAB error report is stored in the `Message` column.
+
+#### Inspecting successful triads
+
+```matlab
+successfulTriads = ...
+    batchTable(batchTable.Status == "Success", :);
+
+disp(successfulTriads);
+```
+
+#### Ranking triads by temporal data loss
+
+To identify the triads with the largest proportion of removed data:
+
+```matlab
+successfulTriads = ...
+    batchTable(batchTable.Status == "Success", :);
+
+successfulTriads = sortrows( ...
+    successfulTriads, ...
+    'SharedRemovedPercent', ...
+    'descend');
+
+disp(successfulTriads);
+```
+
+#### Inspecting participants with many rejected channels
+
+```matlab
+participantsByChannelLoss = sortrows( ...
+    allParticipantTable, ...
+    'RejectedEEGChannelsPercent', ...
+    'descend');
+
+disp(participantsByChannelLoss);
+```
+
+The precise variable name should be checked using:
+
+```matlab
+allParticipantTable.Properties.VariableNames
+```
+
+#### Inspecting one triad
+
+Participant-level information for triad `303` can be selected using:
+
+```matlab
+triad303Participants = ...
+    allParticipantTable( ...
+        string(allParticipantTable.TriadCode) == "303", :);
+```
+
+Channel-level information can be selected using:
+
+```matlab
+triad303Channels = ...
+    allChannelTable( ...
+        string(allChannelTable.TriadCode) == "303", :);
+```
+
+Removed intervals can be selected using:
+
+```matlab
+triad303Intervals = ...
+    allIntervalTable( ...
+        string(allIntervalTable.TriadCode) == "303", :);
+```
+
+#### Changing the combined report filenames
+
+The Excel and MATLAB report filenames can be changed using:
+
+```matlab
+[batchTable, ...
+ allParticipantTable, ...
+ allIntervalTable, ...
+ allChannelTable, ...
+ allTriadSummary] = ...
+    run_all_triad_asr( ...
+        inputRootDir, ...
+        outputRootDir, ...
+        'ReportFilename', ...
+        'Granada_all_triads_ASR_report.xlsx', ...
+        'MatFilename', ...
+        'Granada_all_triads_ASR_report.mat');
+```
+
+#### Running without saving combined reports
+
+The combined project-level reports can be disabled while retaining the individual triad outputs:
+
+```matlab
+[batchTable, ...
+ allParticipantTable, ...
+ allIntervalTable, ...
+ allChannelTable, ...
+ allTriadSummary] = ...
+    run_all_triad_asr( ...
+        inputRootDir, ...
+        outputRootDir, ...
+        'SaveCombinedReport', false);
+```
+
+#### Recommended batch-processing workflow
+
+The recommended procedure is:
+
+```text
+Synchronised triad datasets
+        ↓
+run_all_triad_asr
+        ↓
+Participant-specific bad-channel removal
+        ↓
+Conservative participant-specific ASR
+        ↓
+Participant-specific residual-window detection
+        ↓
+Union of temporal masks across each triad
+        ↓
+Identical temporal removal across the three participants
+        ↓
+Combined project-level quality-control reports
+```
+
+The output datasets remain temporally aligned within each triad and are ready for the subsequent interpolation, rereferencing, and ICA-preparation stages.
