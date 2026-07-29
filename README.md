@@ -1150,26 +1150,6 @@ The combined project-level reports can be disabled while retaining the individua
         'SaveCombinedReport', false);
 ```
 
-#### Recommended batch-processing workflow
 
-The recommended procedure is:
-
-```text
-Synchronised triad datasets
-        ↓
-run_all_triad_asr
-        ↓
-Participant-specific bad-channel removal
-        ↓
-Conservative participant-specific ASR
-        ↓
-Participant-specific residual-window detection
-        ↓
-Union of temporal masks across each triad
-        ↓
-Identical temporal removal across the three participants
-        ↓
-Combined project-level quality-control reports
-```
 
 The output datasets remain temporally aligned within each triad and are ready for the subsequent interpolation, rereferencing, and ICA-preparation stages.
