@@ -252,7 +252,7 @@ disp(importLog);
 ```
 ---
 
-### `synchronise_triad_markers`
+### `synchronise_triad_markers.m`
 
 The `synchronise_triad_markers` function synchronises the event markers and duration of three continuous EEGLAB recordings belonging to the same participant triad. It:
 
@@ -313,7 +313,7 @@ EEGsync{2}
 EEGsync{3}
 ```
 
-### `run_all_triad_synchronisation`
+### `run_all_triad_synchronisation.m`
 
 The `run_all_triad_synchronisation` function (it is a wrapper) applies `synchronise_triad_markers` to every participant triad contained in a root directory. It:
 
@@ -410,7 +410,7 @@ Marker-level information for a specific triad can be inspected using:
 allSyncTable(allSyncTable.TriadCode == "303", :)
 ```
 
-### `clean_triad_asr`
+### `clean_triad_asr.m`
 
 The function performs conservative artefact cleaning on the three synchronised EEG recordings belonging to one triad.
 
@@ -418,7 +418,7 @@ The function is intentionally restricted to preprocessing up to the removal of u
 
 The central requirement of this function is to preserve exact temporal correspondence across the three participants. ASR is applied independently to each recording, but any temporal period classified as unusable in one participant is subsequently removed from all three datasets.
 
-### Processing overview
+#### Processing overview
 
 For each triad, the function:
 
@@ -438,7 +438,7 @@ For each triad, the function:
 14. confirms that the cleaned datasets retain identical sample counts and event timing;
 15. saves the cleaned datasets and detailed quality-control reports.
 
-### Preprocessing decisions
+#### Preprocessing decisions
 
 No line-noise correction is performed. This decision was made after inspection of the recordings indicated that line noise was not a relevant problem.
 
@@ -469,7 +469,7 @@ Protected frontal channels are not removed solely because they fail the channel-
 The `HEO` and `VEO` channels are used diagnostically to determine whether unusual frontal activity is consistent with ocular contamination. The original EEG data are not modified through EOG regression at this stage.
 This approach preserves ocular activity that can later be separated using ICA while reducing the risk of systematically removing electrodes close to the eyes.
 
-### Bad-channel detection
+#### Bad-channel detection
 
 Bad-channel detection is performed independently for each participant.
 
@@ -491,7 +491,7 @@ The function stores the complete original channel-location structure before remo
 EEG.etc.triad_asr_cleaning.originalChanlocs
 ```
 
-### Artefact Subspace Reconstruction
+#### Artefact Subspace Reconstruction
 
 ASR is run separately for each participant using a conservative burst criterion:
 
@@ -513,7 +513,7 @@ The principal settings are equivalent to:
 
 ASR reconstruction preserves the original number of samples. A sample altered by ASR is therefore not automatically considered unusable.
 
-### Residual bad-period detection
+#### Residual bad-period detection
 
 After ASR reconstruction, each recording is evaluated to identify periods that remain severely contaminated.
 
@@ -561,7 +561,7 @@ EEGclean{2}.pnts == EEGclean{3}.pnts
 
 and preserves exact temporal correspondence across participants.
 
-### Function syntax
+#### Function syntax
 
 ```matlab
 [EEGclean, ...
@@ -576,7 +576,7 @@ and preserves exact temporal correspondence across participants.
         'OutputDir', outputDir);
 ```
 
-### Example
+#### Example
 
 ```matlab
 % Three synchronised recordings belonging to one triad.
@@ -605,7 +605,7 @@ outputDir = ...
         'OutputDir', outputDir);
 ```
 
-### Changing the protected frontal channels
+#### Changing the protected frontal channels
 
 The protected frontal-channel list can be modified using the `ProtectedFrontalLabels` option:
 
@@ -633,7 +633,7 @@ The protected frontal-channel list can be modified using the `ProtectedFrontalLa
         });
 ```
 
-### Output datasets
+#### Output datasets
 
 For triad `303`, the function produces:
 
@@ -655,7 +655,7 @@ The files contain:
 
 The files are not yet interpolated or rereferenced and do not contain an ICA decomposition.
 
-### Quality-control reports
+#### Quality-control reports
 
 The function also generates:
 
@@ -755,7 +755,7 @@ qcMasks.sharedRetainedIntervals
 
 These variables allow the cleaning decisions to be inspected or visualised without rerunning ASR.
 
-### Interpretation of ASR statistics
+#### Interpretation of ASR statistics
 
 The function distinguishes between:
 
@@ -769,7 +769,7 @@ Only samples that remain severely contaminated after ASR contribute to a partici
 
 This distinction should be retained when reporting the preprocessing procedure.
 
-### `run_all_triad_asr`
+### `run_all_triad_asr.m`
 
 The `run_all_triad_asr` function (a wrapper) applies `clean_triad_asr` to every triad contained in a root directory.
 
@@ -788,52 +788,7 @@ For each `triad_xxx` folder, the wrapper:
 9. optionally continues with the remaining triads after an error;
 10. saves a combined project-level Excel workbook and MATLAB report.
 
-#### Expected input structure
-
-```text
-02_synchronised/
-├── triad_303/
-│   ├── 303_1_raw_sync.set
-│   ├── 303_2_raw_sync.set
-│   └── 303_3_raw_sync.set
-├── triad_306/
-│   ├── 306_1_raw_sync.set
-│   ├── 306_2_raw_sync.set
-│   └── 306_3_raw_sync.set
-├── triad_319/
-│   ├── 319_1_raw_sync.set
-│   ├── 319_2_raw_sync.set
-│   └── 319_3_raw_sync.set
-└── ...
-```
-
-### Output structure
-
-```text
-03_asr_cleaned/
-├── triad_303/
-│   ├── 303_1_raw_sync_asr.set
-│   ├── 303_2_raw_sync_asr.set
-│   ├── 303_3_raw_sync_asr.set
-│   ├── 303_asr_qc.xlsx
-│   └── 303_asr_qc.mat
-├── triad_306/
-│   ├── 306_1_raw_sync_asr.set
-│   ├── 306_2_raw_sync_asr.set
-│   ├── 306_3_raw_sync_asr.set
-│   ├── 306_asr_qc.xlsx
-│   └── 306_asr_qc.mat
-├── triad_319/
-│   └── ...
-├── all_triads_asr_qc.xlsx
-└── all_triads_asr_qc.mat
-```
-
-Each triad folder contains the three ASR-cleaned datasets and the quality-control reports generated by `clean_triad_asr`.
-
-The root output folder additionally contains combined reports summarising all triads.
-
-### Function syntax
+#### Function syntax
 
 ```matlab
 [batchTable, ...
@@ -846,7 +801,7 @@ The root output folder additionally contains combined reports summarising all tr
         outputRootDir);
 ```
 
-### Basic example
+#### Basic example
 
 ```matlab
 % Root folder containing the triad_xxx synchronised-data folders.
@@ -906,7 +861,7 @@ The pattern must contain:
 - one string field for the triad code;
 - one integer field for the participant number.
 
-### Continuing after processing errors
+#### Continuing after processing errors
 
 By default, the wrapper continues to the next triad when one triad produces an error:
 
@@ -932,7 +887,7 @@ To stop immediately when an error occurs:
 
 All errors are recorded in `batchTable`.
 
-### Passing options to `clean_triad_asr`
+#### Passing options to `clean_triad_asr.m`
 
 Additional options can be passed directly to `clean_triad_asr` using the `CleanerOptions` parameter.
 
@@ -1058,7 +1013,7 @@ It includes:
 - overlap between participant masks;
 - confirmation of identical final temporal dimensions.
 
-### Combined MATLAB report
+#### Combined MATLAB report
 
 The function also saves:
 
@@ -1079,7 +1034,7 @@ options
 
 The MATLAB report can be used for subsequent statistical summaries, visualisation, or automated quality-control checks.
 
-### Inspecting failed triads
+#### Inspecting failed triads
 
 Triads that generated an error can be inspected using:
 
