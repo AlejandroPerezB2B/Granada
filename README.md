@@ -417,3 +417,445 @@ Marker-level information for a specific triad can be inspected using:
 ```matlab
 allSyncTable(allSyncTable.TriadCode == "303", :)
 ```
+
+## ASR cleaning of synchronised triads
+
+### `clean_triad_asr`
+
+The `clean_triad_asr` function performs conservative artefact cleaning on the three synchronised EEG recordings belonging to one triad.
+
+The function is intentionally restricted to preprocessing up to the removal of unusable temporal periods. It does **not** interpolate rejected channels, rereference the data, run ICA, or apply ICLabel. These operations will be implemented separately so that ASR cleaning and ICA preparation remain modular and can be independently inspected or repeated.
+
+The central requirement of this function is to preserve exact temporal correspondence across the three participants. ASR is applied independently to each recording, but any temporal period classified as unusable in one participant is subsequently removed from all three datasets.
+
+### Processing overview
+
+For each triad, the function:
+
+1. loads the three synchronised EEGLAB `.set` datasets;
+2. verifies that the recordings have the same sampling rate and number of samples;
+3. verifies that experimental event types and latencies are identical across recordings;
+4. identifies EEG, EOG, mastoid, and Trigger channels;
+5. high-pass filters the EEG and EOG channels once at 1 Hz;
+6. leaves the Trigger channel unfiltered;
+7. identifies flat-lined and persistently noisy EEG channels;
+8. protects frontal EEG channels from correlation-only rejection;
+9. uses the EOG channels diagnostically when evaluating frontal channels;
+10. runs Artefact Subspace Reconstruction independently for each participant;
+11. identifies temporal periods that remain severely contaminated after ASR;
+12. combines the three participant-specific bad-period masks;
+13. removes the union of unusable periods from all three recordings;
+14. confirms that the cleaned datasets retain identical sample counts and event timing;
+15. saves the cleaned datasets and detailed quality-control reports.
+
+### Preprocessing decisions
+
+#### High-pass filtering
+
+The EEG and EOG channels are high-pass filtered once at 1 Hz before bad-channel detection and ASR.
+
+A separate low-frequency analysis copy is not created because the planned analyses do not include event-related potentials and activity below 1 Hz is not required.
+
+The Trigger channel is not filtered.
+
+#### Line-noise processing
+
+No line-noise correction is performed.
+
+The function does not apply:
+
+- CleanLine;
+- Zapline-plus;
+- notch filtering;
+- line-noise-based channel rejection.
+
+This decision was made after inspection of the recordings indicated that line noise was not a relevant problem.
+
+#### Auxiliary channels
+
+The datasets contain the following non-scalp channels:
+
+- `HEO`;
+- `VEO`;
+- `Trigger`.
+
+These channels are preserved in the datasets but excluded from:
+
+- bad-EEG-channel detection;
+- ASR calibration;
+- ASR reconstruction;
+- residual-window rejection.
+
+The Trigger channel remains unchanged apart from the later removal of temporal periods shared across the triad.
+
+`M1` and `M2` contain normal EEG-like activity and are treated as EEG channels during the cleaning procedure.
+
+### Protection of frontal channels
+
+Frontal and frontopolar electrodes frequently contain strong ocular activity. Such activity can reduce their correlation with neighbouring electrodes and cause otherwise functioning channels to be rejected by automatic channel-correlation procedures.
+
+The function therefore defines a set of protected frontal channels:
+
+```matlab
+{
+    'Fp1'
+    'Fpz'
+    'Fp2'
+    'AF7'
+    'AF3'
+    'AFz'
+    'AF4'
+    'AF8'
+    'F7'
+    'F8'
+}
+```
+
+Protected frontal channels are not removed solely because they fail the channel-correlation criterion.
+
+They may still be removed when they show strong evidence of electrode failure, such as a sustained flat line.
+
+The `HEO` and `VEO` channels are used diagnostically to determine whether unusual frontal activity is consistent with ocular contamination. The original EEG data are not modified through EOG regression at this stage.
+
+This approach preserves ocular activity that can later be separated using ICA while reducing the risk of systematically removing electrodes close to the eyes.
+
+### Bad-channel detection
+
+Bad-channel detection is performed independently for each participant.
+
+The default channel-correlation threshold is:
+
+```matlab
+ChannelCriterion = 0.75;
+```
+
+Flat-lined channels are identified using:
+
+```matlab
+FlatlineCriterion = 5;
+```
+
+This corresponds to a continuous flat period of at least 5 seconds.
+
+Line-noise-based channel detection is disabled.
+
+Each participant may retain a different number of EEG channels. Temporal correspondence across participants does not require identical channel sets.
+
+The function stores the complete original channel-location structure before removing any channel:
+
+```matlab
+EEG.etc.triad_asr_cleaning.originalChanlocs
+```
+
+This information will later be used to interpolate rejected scalp channels before ICA.
+
+### Artefact Subspace Reconstruction
+
+ASR is run separately for each participant using a conservative burst criterion:
+
+```matlab
+BurstCriterion = 20;
+```
+
+ASR is configured to reconstruct contaminated subspaces rather than automatically reject every affected temporal period.
+
+The internal high-pass stage of `clean_rawdata` is disabled because the datasets have already been explicitly filtered at 1 Hz.
+
+No line-noise processing is performed within ASR.
+
+The principal settings are equivalent to:
+
+```matlab
+'BurstCriterion', 20
+'BurstRejection', 'off'
+'WindowCriterion', 'off'
+'Highpass', 'off'
+'LineNoiseCriterion', 'off'
+```
+
+ASR reconstruction preserves the original number of samples. A sample altered by ASR is therefore not automatically considered unusable.
+
+### Residual bad-period detection
+
+After ASR reconstruction, each recording is evaluated to identify periods that remain severely contaminated.
+
+Protected frontal channels are excluded from this residual-window assessment by default so that blinks and eye movements do not independently cause the removal of otherwise usable data.
+
+The default residual-window criterion is:
+
+```matlab
+WindowCriterion = 0.30;
+```
+
+This means that a temporal window is classified as unusable only when a substantial proportion of the evaluated EEG channels remains contaminated after ASR.
+
+Each participant produces an individual logical mask:
+
+```matlab
+participantBadMask1
+participantBadMask2
+participantBadMask3
+```
+
+The common triad-level bad-period mask is calculated as:
+
+```matlab
+sharedBadMask = ...
+    participantBadMask1 | ...
+    participantBadMask2 | ...
+    participantBadMask3;
+```
+
+The retained mask is:
+
+```matlab
+sharedKeepMask = ~sharedBadMask;
+```
+
+The same rejected intervals are then removed from all three complete recordings, including their EEG, EOG, and Trigger channels.
+
+This guarantees:
+
+```matlab
+EEGclean{1}.pnts == EEGclean{2}.pnts
+EEGclean{2}.pnts == EEGclean{3}.pnts
+```
+
+and preserves exact temporal correspondence across participants.
+
+### Acquisition reference
+
+The acquisition is assumed to have used the dedicated Quik-Cap reference located between Cz and CPz.
+
+The reference signal was not stored as one of the 67 imported channels and is not restored as a zero-valued channel.
+
+This assumption is stored as dataset metadata but does not otherwise affect this function because rereferencing is not performed at this stage.
+
+```text
+Dedicated Quik-Cap reference between Cz and CPz;
+not stored and not restored
+```
+
+### Function syntax
+
+```matlab
+[EEGclean, ...
+ participantTable, ...
+ intervalTable, ...
+ channelTable, ...
+ triadSummary] = ...
+    clean_triad_asr( ...
+        setFile1, ...
+        setFile2, ...
+        setFile3, ...
+        'OutputDir', outputDir);
+```
+
+### Example
+
+```matlab
+% Three synchronised recordings belonging to one triad.
+setFile1 = ...
+    'E:\Granada\data_derivatives\02_synchronised\triad_303\303_1_raw_sync.set';
+
+setFile2 = ...
+    'E:\Granada\data_derivatives\02_synchronised\triad_303\303_2_raw_sync.set';
+
+setFile3 = ...
+    'E:\Granada\data_derivatives\02_synchronised\triad_303\303_3_raw_sync.set';
+
+% Output folder for the ASR-cleaned datasets and QC reports.
+outputDir = ...
+    'E:\Granada\data_derivatives\03_asr_cleaned\triad_303';
+
+[EEGclean, ...
+ participantTable, ...
+ intervalTable, ...
+ channelTable, ...
+ triadSummary] = ...
+    clean_triad_asr( ...
+        setFile1, ...
+        setFile2, ...
+        setFile3, ...
+        'OutputDir', outputDir);
+```
+
+### Changing the protected frontal channels
+
+The protected frontal-channel list can be modified using the `ProtectedFrontalLabels` option:
+
+```matlab
+[EEGclean, ...
+ participantTable, ...
+ intervalTable, ...
+ channelTable, ...
+ triadSummary] = ...
+    clean_triad_asr( ...
+        setFile1, ...
+        setFile2, ...
+        setFile3, ...
+        'OutputDir', outputDir, ...
+        'ProtectedFrontalLabels', ...
+        { ...
+            'Fp1', ...
+            'Fpz', ...
+            'Fp2', ...
+            'AF7', ...
+            'AF3', ...
+            'AFz', ...
+            'AF4', ...
+            'AF8' ...
+        });
+```
+
+### Output datasets
+
+For triad `303`, the function produces:
+
+```text
+303_1_raw_sync_asr.set
+303_2_raw_sync_asr.set
+303_3_raw_sync_asr.set
+```
+
+The files contain:
+
+- EEG data high-pass filtered at 1 Hz;
+- participant-specific bad EEG channels removed;
+- transient artefacts reconstructed by ASR;
+- the same unusable temporal periods removed from all three recordings;
+- preserved EOG and Trigger channels;
+- original channel-location information stored in `EEG.etc`;
+- metadata describing the cleaning settings and results.
+
+The files are not yet interpolated or rereferenced and do not contain an ICA decomposition.
+
+### Quality-control reports
+
+The function also generates:
+
+```text
+303_asr_qc.xlsx
+303_asr_qc.mat
+```
+
+The Excel report contains four worksheets.
+
+#### `Participants`
+
+One row is included for each participant. The table records information such as:
+
+- input filename;
+- output filename;
+- sampling rate;
+- original number of samples;
+- final number of samples;
+- original recording duration;
+- final recording duration;
+- original number of EEG channels;
+- final number of EEG channels;
+- number of rejected EEG channels;
+- percentage of rejected EEG channels;
+- number of samples modified by ASR;
+- percentage of samples modified by ASR;
+- number of samples independently flagged as unusable;
+- number of samples removed by the shared triad mask;
+- percentage of shared time removed;
+- percentage of data retained.
+
+#### `Channels`
+
+One row is included for each original EEG channel and participant. The table records:
+
+- participant;
+- channel label;
+- whether the channel was protected as frontal;
+- whether it was detected as flat-lined;
+- whether it failed the channel-correlation criterion;
+- whether it was retained or removed;
+- EOG-related diagnostic information;
+- the final channel decision.
+
+Possible channel decisions include:
+
+```text
+Retained_standard
+Retained_protected_frontal
+Retained_after_EOG_QC
+Rejected_flatline
+Rejected_persistent_noise
+Requires_review
+```
+
+#### `Removed intervals`
+
+One row is included for each shared rejected interval. The table records:
+
+- triad identifier;
+- original starting sample;
+- original ending sample;
+- starting time in seconds;
+- ending time in seconds;
+- interval duration;
+- whether participant 1 flagged the interval;
+- whether participant 2 flagged the interval;
+- whether participant 3 flagged the interval.
+
+#### `Triad summary`
+
+This worksheet records the principal triad-level results, including:
+
+- total number of original samples;
+- total number of removed samples;
+- percentage of data removed;
+- final number of samples;
+- final duration;
+- number of samples flagged by each participant;
+- overlap between participant masks;
+- confirmation of identical final sample counts;
+- confirmation of identical event sequences and latencies.
+
+### MATLAB quality-control variables
+
+The `.mat` report stores the summary tables and the complete logical masks:
+
+```matlab
+qcMasks.asrChangedMasks
+qcMasks.participantBadMasks
+qcMasks.sharedBadMask
+qcMasks.sharedKeepMask
+qcMasks.sharedRemovedIntervals
+qcMasks.sharedRetainedIntervals
+```
+
+These variables allow the cleaning decisions to be inspected or visualised without rerunning ASR.
+
+### Interpretation of ASR statistics
+
+The function distinguishes between:
+
+1. samples modified by ASR;
+2. samples classified as irrecoverable after ASR;
+3. samples removed from the complete triad.
+
+A sample modified by ASR is not necessarily rejected.
+
+Only samples that remain severely contaminated after ASR contribute to a participant-specific bad-period mask. The union of these masks determines the time removed from all three recordings.
+
+This distinction should be retained when reporting the preprocessing procedure.
+
+### Subsequent preprocessing
+
+The output of `clean_triad_asr` is intended to be passed to a separate ICA-preparation procedure.
+
+The subsequent pipeline will include:
+
+1. interpolation of participant-specific rejected scalp channels;
+2. arithmetic average rereferencing;
+3. exclusion of EOG and Trigger channels from the reference calculation;
+4. estimation of the effective data rank;
+5. ICA decomposition using explicit dimensionality reduction where required;
+6. ICLabel classification;
+7. manual inspection and rejection of artifactual independent components.
+
+Interpolation and rereferencing are deliberately not implemented in `clean_triad_asr`.
