@@ -1156,7 +1156,7 @@ The output datasets remain temporally aligned within each triad and are ready fo
 
 ## ICA, DIPFIT, and ICLabel
 
-### `run_ica_dipfit_iclabel`
+### `run_ica_dipfit_iclabel.m`
 
 The `run_ica_dipfit_iclabel` function processes one ASR-cleaned participant dataset and prepares it for manual independent-component inspection.
 
@@ -1198,7 +1198,7 @@ The resulting dataset contains the full-rate EEG data, interpolated scalp montag
 
 ---
 
-### `run_all_ica_dipfit_iclabel`
+### `run_all_ica_dipfit_iclabel.m`
 
 The `run_all_ica_dipfit_iclabel` wrapper applies `run_ica_dipfit_iclabel` independently to every participant contained in folders following the `triad_xxx` convention.
 
