@@ -1153,3 +1153,110 @@ The combined project-level reports can be disabled while retaining the individua
 
 
 The output datasets remain temporally aligned within each triad and are ready for the subsequent interpolation, rereferencing, and ICA-preparation stages.
+
+## ICA, DIPFIT, and ICLabel
+
+### `run_ica_dipfit_iclabel`
+
+The `run_ica_dipfit_iclabel` function processes one ASR-cleaned participant dataset and prepares it for manual independent-component inspection.
+
+The function:
+
+- permanently removes `M1` and `M2`;
+- restores rejected scalp channels using spherical interpolation;
+- applies an arithmetic average reference across scalp EEG channels;
+- preserves `HEO`, `VEO`, and `Trigger` as auxiliary channels;
+- creates a scalp-only copy resampled to 250 Hz for ICA training;
+- estimates the effective data rank after interpolation and rereferencing;
+- runs extended Infomax ICA using explicit PCA dimensionality reduction;
+- transfers the ICA decomposition to the original full-rate dataset;
+- fits one equivalent dipole per component using the DIPFIT standard BEM model;
+- runs ICLabel and stores the classification probabilities;
+- saves the final dataset without automatically flagging or removing components.
+
+The dedicated acquisition reference located between Cz and CPz is not restored as a zero-valued channel.
+
+#### Example
+
+```matlab
+setFile = ...
+    'E:\Granada\data_derivatives\03_asr_cleaned\triad_303\303_1_raw_sync_asr.set';
+
+outputDir = ...
+    'E:\Granada\data_derivatives\04_ica\triad_303';
+
+[EEGout, summaryTable, componentTable, rankTable] = ...
+    run_ica_dipfit_iclabel( ...
+        setFile, ...
+        'OutputDir', outputDir, ...
+        'ICAResampleRate', 250, ...
+        'RunDIPFIT', true, ...
+        'RunICLabel', true);
+```
+
+The resulting dataset contains the full-rate EEG data, interpolated scalp montage, average reference, ICA decomposition, DIPFIT models, and ICLabel probabilities. No independent components are removed at this stage.
+
+---
+
+### `run_all_ica_dipfit_iclabel`
+
+The `run_all_ica_dipfit_iclabel` wrapper applies `run_ica_dipfit_iclabel` independently to every participant contained in folders following the `triad_xxx` convention.
+
+#### Expected input structure
+
+```text
+03_asr_cleaned/
+├── triad_303/
+│   ├── 303_1_raw_sync_asr.set
+│   ├── 303_2_raw_sync_asr.set
+│   └── 303_3_raw_sync_asr.set
+├── triad_306/
+│   ├── 306_1_raw_sync_asr.set
+│   ├── 306_2_raw_sync_asr.set
+│   └── 306_3_raw_sync_asr.set
+└── ...
+```
+
+#### Example
+
+```matlab
+inputRootDir = ...
+    'E:\Granada\data_derivatives\03_asr_cleaned';
+
+outputRootDir = ...
+    'E:\Granada\data_derivatives\04_ica';
+
+pipelineOptions = { ...
+    'ICAResampleRate', 250, ...
+    'RandomSeed', 1, ...
+    'RunDIPFIT', true, ...
+    'PlotDIPFITAlignment', false, ...
+    'RunICLabel', true};
+
+[batchTable, ...
+ allSummaryTable, ...
+ allComponentTable, ...
+ allRankTable] = ...
+    run_all_ica_dipfit_iclabel( ...
+        inputRootDir, ...
+        outputRootDir, ...
+        'ContinueOnError', true, ...
+        'PipelineOptions', pipelineOptions);
+```
+
+#### Output structure
+
+```text
+04_ica/
+├── triad_303/
+│   ├── 303_1_raw_sync_asr_ica.set
+│   ├── 303_2_raw_sync_asr_ica.set
+│   ├── 303_3_raw_sync_asr_ica.set
+│   └── participant-specific QC files
+├── triad_306/
+│   └── ...
+├── all_participants_ica_qc.xlsx
+└── all_participants_ica_qc.mat
+```
+
+The combined reports contain participant-level processing summaries, effective ICA-rank estimates, DIPFIT results, ICLabel probabilities, processing times, and any errors encountered during batch processing.
