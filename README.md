@@ -5,8 +5,8 @@ This repository contains the MATLAB and EEGLAB code used to import, organise, sy
 > Principal Investigators: **María Teresa Bajo** and **Sandra Marful** \
 > CIMCYC, Universidad de Granada.
 
-> **Authors:** \
-> - *Alejandro Pérez* — `@AlejandroPerezB2B`\
+> **Authors:**
+> - *Alejandro Pérez* — `@AlejandroPerezB2B`
 > - *Celia Sissi Stijsiger* — `@CeliaSissi`
 
 ## Experimental task
