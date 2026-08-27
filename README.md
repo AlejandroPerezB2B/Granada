@@ -1,13 +1,13 @@
 # Triadic EEG Analysis Pipeline
 
+> [!NOTE]
+This repository contains the MATLAB and EEGLAB code used to import, organise, synchronise, preprocess and analyse EEG data recorded simultaneously from participant triads
 > **Research project:** _ColMem_
+> 
 > 
 > Led by Principal Investigators **María Teresa Bajo** and **Sandra Marful**
 > 
 > CIMCYC, Universidad de Granada.
-
-> [!NOTE]
-This repository contains the MATLAB and EEGLAB code used to import, organise, synchronise, preprocess and analyse EEG data recorded simultaneously from participant triads 
 
 > **Authors:**
 
