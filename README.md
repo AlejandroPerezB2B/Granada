@@ -6,7 +6,7 @@
 > 
 > CIMCYC, Universidad de Granada.
 
-[!NOTE] This repository contains the MATLAB and EEGLAB code used to import, organise, synchronise, preprocess and analyse EEG data recorded simultaneously from participant triads.
+[!This repository contains the MATLAB and EEGLAB code used to import, organise, synchronise, preprocess and analyse EEG data recorded simultaneously from participant triads.NOTE] 
 
 > **Authors:**
 
