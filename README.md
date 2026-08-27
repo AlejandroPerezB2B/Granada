@@ -8,10 +8,10 @@
 
 This repository contains the MATLAB and EEGLAB code used to import, organise, synchronise, preprocess and analyse EEG data recorded simultaneously from participant triads.\
 
-**Authors:**
+> **Authors:**
 
-- *Alejandro Pérez* — `@AlejandroPerezB2B`
-- *Celia Sissi Stijsiger* — `@CeliaSissi`
+> - *Alejandro Pérez* — `@AlejandroPerezB2B`
+> - *Celia Sissi Stijsiger* — `@CeliaSissi`
 
 ## Experimental task
 
