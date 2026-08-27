@@ -2,12 +2,13 @@
 
 > **Project title:** _ColMem_
 
-This repository contains the MATLAB and EEGLAB code used to import, organise, synchronise, preprocess and analyse EEG data recorded simultaneously from participant triads.
+This repository contains the MATLAB and EEGLAB code used to import, organise, synchronise, preprocess and analyse EEG data recorded simultaneously from participant triads.\
+This code was developed as part of a research project led by Principal Investigators **María Teresa Bajo** and **Sandra Marful** at the CIMCYC, Universidad de Granada.
 
-## Authors:
+**Authors:**
 
-- **Alejandro Pérez** — `@AlejandroPerezB2B`
-- **Celia Sissi Stijsiger** — `@CeliaSissi`
+- *Alejandro Pérez* — `@AlejandroPerezB2B`
+- *Celia Sissi Stijsiger* — `@CeliaSissi`
 
 ## Background
 
