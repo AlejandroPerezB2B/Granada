@@ -10,10 +10,6 @@ This code was developed as part of a research project led by Principal Investiga
 - *Alejandro Pérez* — `@AlejandroPerezB2B`
 - *Celia Sissi Stijsiger* — `@CeliaSissi`
 
-## Background
-
-This section should provide sufficient information for a researcher not involved in data collection to understand the experiment and the task.
-
 ## Experimental task
 
 Participants were Spanish–English bilinguals who completed the Michigan English Language Institute College English Test (MELICET) as part of the pre-screening procedure. A minimum score of 25 out of 50 was required for inclusion. Upon arrival, participants were asked whether they knew either of the other individuals assigned to the same session. Previously acquainted participants were not included in the collaborative condition and were instead tested individually or rescheduled. All participants provided written informed consent and completed the Language Experience and Proficiency Questionnaire (LEAP-Q) to assess their language history, proficiency, and patterns of language use.
@@ -132,7 +128,7 @@ recording_name.ceo
 
 The three EEG recordings contain event markers that were introduced with intended temporal synchrony. These markers will be used as reference points when aligning the recordings.
 
-Please also describe:
+> **To be completed:**
 
 - how the markers were generated;
 - how they were transmitted to each EEG system;
